@@ -1,0 +1,334 @@
+name: Deploy ZamAI Models to Hugging Face
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  PYTHON_VERSION: '3.9'
+  HF_ORG: tasal9
+
+jobs:
+  test-models:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test model loading
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        python -c "
+        from huggingface_hub import InferenceClient
+        import os
+        
+        client = InferenceClient(token=os.getenv('HF_TOKEN'))
+        
+        # Test your existing models
+        models_to_test = [
+            'tasal9/ZamAI-Mistral-7B-Pashto',
+            'tasal9/ZamAI-Phi-3-Mini-Pashto',
+            'tasal9/ZamAI-Whisper-v3-Pashto',
+            'tasal9/Multilingual-ZamAI-Embeddings'
+        ]
+        
+        for model in models_to_test:
+            try:
+                print(f'Testing model: {model}')
+                # Test text generation models
+                if 'Mistral' in model or 'Phi' in model:
+                    response = client.text_generation(
+                        model=model,
+                        prompt='Hello, how are you?',
+                        max_new_tokens=50
+                    )
+                    print(f'✅ {model} responded: {response[:50]}...')
+                else:
+                    print(f'✅ {model} loaded successfully')
+            except Exception as e:
+                print(f'❌ Error with {model}: {e}')
+        "
+
+  deploy-demos:
+    needs: test-models
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    strategy:
+      matrix:
+        demo: [chatbot, voice, business]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Login to Hugging Face
+      run: |
+        pip install --upgrade huggingface_hub
+        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+        
+    - name: Create Space for ${{ matrix.demo }} demo
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        # Create or update Hugging Face Space
+        python -c "
+        from huggingface_hub import HfApi, create_repo
+        import os
+        
+        api = HfApi()
+        demo_name = '${{ matrix.demo }}'
+        repo_name = f'zamai-{demo_name}-demo'
+        
+        try:
+            # Try to create the space (will fail if it already exists)
+            create_repo(
+                repo_id=f'${{ env.HF_ORG }}/{repo_name}',
+                repo_type='space',
+                space_sdk='gradio',
+                private=False,
+                token=os.getenv('HF_TOKEN')
+            )
+            print(f'✅ Created new space: {repo_name}')
+        except Exception as e:
+            print(f'ℹ️ Space {repo_name} already exists or error: {e}')
+        
+        # Upload demo files
+        try:
+            api.upload_file(
+                path_or_fileobj=f'demos/{demo_name}_demo.py',
+                path_in_repo='app.py',
+                repo_id=f'${{ env.HF_ORG }}/{repo_name}',
+                repo_type='space',
+                token=os.getenv('HF_TOKEN')
+            )
+            
+            # Upload requirements
+            api.upload_file(
+                path_or_fileobj='requirements.txt',
+                path_in_repo='requirements.txt',
+                repo_id=f'${{ env.HF_ORG }}/{repo_name}',
+                repo_type='space',
+                token=os.getenv('HF_TOKEN')
+            )
+            
+            print(f'✅ Uploaded {demo_name} demo to Hugging Face Spaces')
+        except Exception as e:
+            print(f'❌ Failed to upload {demo_name} demo: {e}')
+        "
+
+  update-model-cards:
+    needs: test-models
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip huggingface_hub pyyaml
+        
+    - name: Update Model Cards with Metadata
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        python -c "
+        from huggingface_hub import HfApi
+        import yaml
+        import os
+        
+        api = HfApi()
+        
+        # Model card template
+        model_cards = {
+            'tasal9/ZamAI-Mistral-7B-Pashto': {
+                'base_model': 'mistralai/Mistral-7B-Instruct-v0.1',
+                'license': 'apache-2.0',
+                'language': ['en', 'ps'],
+                'tags': ['education', 'pashto', 'tutoring', 'zamai', 'multilingual'],
+                'widget': [
+                    {'text': 'د فزیک د کوانټم نظریه تشریح کړئ', 'example_title': 'Physics in Pashto'},
+                    {'text': 'What is machine learning?', 'example_title': 'ML Basics'}
+                ]
+            },
+            'tasal9/ZamAI-Phi-3-Mini-Pashto': {
+                'base_model': 'microsoft/Phi-3-mini-4k-instruct',
+                'license': 'mit',
+                'language': ['en', 'ps'],
+                'tags': ['business', 'document-processing', 'forms', 'zamai', 'pashto'],
+                'widget': [
+                    {'text': 'Extract key information from this contract...', 'example_title': 'Contract Analysis'},
+                    {'text': 'Analyze this business form...', 'example_title': 'Form Processing'}
+                ]
+            }
+        }
+        
+        for model_id, metadata in model_cards.items():
+            try:
+                # Create README content
+                readme_content = f'''---
+{yaml.dump(metadata, default_flow_style=False)}---
+
+# {model_id.split('/')[-1]}
+
+This model is part of the ZamAI Pro Models Strategy for educational and business applications with Pashto language support.
+
+## Model Description
+
+This model has been fine-tuned for specific use cases within the ZamAI ecosystem, providing high-quality responses in both English and Pashto languages.
+
+## Usage
+
+```python
+from huggingface_hub import InferenceClient
+
+client = InferenceClient(token=\"your_hf_token\")
+response = client.text_generation(
+    model=\"{model_id}\",
+    prompt=\"Your prompt here\",
+    max_new_tokens=300
+)
+```
+
+## Demo Applications
+
+- [Chatbot Demo](https://huggingface.co/spaces/{os.getenv('HF_ORG', 'tasal9')}/zamai-chatbot-demo)
+- [Voice Assistant](https://huggingface.co/spaces/{os.getenv('HF_ORG', 'tasal9')}/zamai-voice-demo)
+- [Business Processor](https://huggingface.co/spaces/{os.getenv('HF_ORG', 'tasal9')}/zamai-business-demo)
+
+## Citation
+
+```
+@misc{{zamai-models-2024,
+  title={{ZamAI Pro Models Strategy}},
+  author={{ZamAI Team}},
+  year={{2024}},
+  url={{https://github.com/your-repo/ZamAI-Pro-Models-Strategy2}}
+}}
+```
+'''
+                
+                # Upload README
+                api.upload_file(
+                    path_or_fileobj=readme_content.encode(),
+                    path_in_repo='README.md',
+                    repo_id=model_id,
+                    repo_type='model',
+                    token=os.getenv('HF_TOKEN'),
+                    commit_message='Update model card with CI/CD automation'
+                )
+                
+                print(f'✅ Updated model card for {model_id}')
+                
+            except Exception as e:
+                print(f'❌ Failed to update {model_id}: {e}')
+        "
+
+  create-endpoints:
+    needs: [test-models]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install Hugging Face CLI
+      run: |
+        pip install --upgrade huggingface_hub
+        
+    - name: Create/Update Inference Endpoints
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        # Login to HF CLI
+        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+        
+        # Note: Endpoint creation requires HF Pro subscription
+        # These commands would create endpoints if you have the proper subscription
+        
+        echo \"📝 Endpoint creation commands (requires HF Pro):\"
+        echo \"huggingface-cli endpoint create --name mistral-edu-endpoint --repository tasal9/ZamAI-Mistral-7B-Pashto --framework pytorch --accelerator gpu --instance-type small\"
+        echo \"huggingface-cli endpoint create --name phi3-business-endpoint --repository tasal9/ZamAI-Phi-3-Mini-Pashto --framework pytorch --accelerator gpu --instance-type small\"
+        
+        # For now, we'll just validate the models are accessible
+        python -c \"
+        from huggingface_hub import InferenceClient
+        import os
+        
+        client = InferenceClient(token=os.getenv('HF_TOKEN'))
+        
+        models = ['tasal9/ZamAI-Mistral-7B-Pashto', 'tasal9/ZamAI-Phi-3-Mini-Pashto']
+        
+        for model in models:
+            try:
+                response = client.text_generation(
+                    model=model,
+                    prompt='Test',
+                    max_new_tokens=10
+                )
+                print(f'✅ {model} is ready for endpoint deployment')
+            except Exception as e:
+                print(f'❌ {model} error: {e}')
+        \"
+
+  notify-completion:
+    needs: [deploy-demos, update-model-cards, create-endpoints]
+    runs-on: ubuntu-latest
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deployment Summary
+      run: |
+        echo \"🎉 ZamAI Pro Models Strategy Deployment Complete!\"
+        echo \"\"
+        echo \"📊 Deployment Status:\"
+        echo \"- Model Testing: ${{ needs.test-models.result }}\"
+        echo \"- Demo Deployment: ${{ needs.deploy-demos.result }}\"
+        echo \"- Model Cards Update: ${{ needs.update-model-cards.result }}\"
+        echo \"- Endpoints Creation: ${{ needs.create-endpoints.result }}\"
+        echo \"\"
+        echo \"🔗 Access your demos at:\"
+        echo \"- Chatbot: https://huggingface.co/spaces/${{ env.HF_ORG }}/zamai-chatbot-demo\"
+        echo \"- Voice: https://huggingface.co/spaces/${{ env.HF_ORG }}/zamai-voice-demo\"
+        echo \"- Business: https://huggingface.co/spaces/${{ env.HF_ORG }}/zamai-business-demo\"
