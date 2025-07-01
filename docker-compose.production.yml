@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Voice Assistant Service
+  voice-assistant:
+    build:
+      context: .
+      dockerfile: docker/voice-assistant/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - WHISPER_MODEL=${WHISPER_MODEL}
+      - LLAMA3_MODEL=${LLAMA3_MODEL}
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=8001
+    volumes:
+      - voice_cache:/app/cache
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+  # Tutor Bot Service
+  tutor-bot:
+    build:
+      context: .
+      dockerfile: docker/tutor-bot/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - MISTRAL_EDU_MODEL=${MISTRAL_EDU_MODEL}
+      - PASHTO_DATASET_REPO=${PASHTO_DATASET_REPO}
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=8002
+    volumes:
+      - tutor_cache:/app/cache
+      - datasets:/app/datasets
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+  # Business Tools Service
+  business-tools:
+    build:
+      context: .
+      dockerfile: docker/business-tools/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - PHI3_BUSINESS_MODEL=${PHI3_BUSINESS_MODEL}
+      - EMBEDDINGS_MODEL=${EMBEDDINGS_MODEL}
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=8003
+    volumes:
+      - business_data:/app/business_data
+      - business_cache:/app/cache
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - WHISPER_MODEL=${WHISPER_MODEL}
+      - LLAMA3_MODEL=${LLAMA3_MODEL}
+      - MISTRAL_EDU_MODEL=${MISTRAL_EDU_MODEL}
+      - PHI3_BUSINESS_MODEL=${PHI3_BUSINESS_MODEL}
+      - EMBEDDINGS_MODEL=${EMBEDDINGS_MODEL}
+    depends_on:
+      - voice-assistant
+      - tutor-bot
+      - business-tools
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+  # Nginx Load Balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api-gateway
+      - voice-assistant
+      - tutor-bot
+      - business-tools
+    restart: unless-stopped
+    networks:
+      - zamai-network
+
+volumes:
+  voice_cache:
+  tutor_cache:
+  business_cache:
+  business_data:
+  datasets:
+  redis_data:
+
+networks:
+  zamai-network:
+    driver: bridge
