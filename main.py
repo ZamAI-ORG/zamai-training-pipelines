@@ -70,23 +70,40 @@ def list_available_models():
 
 def launch_demo(demo_type):
     """Launch a specific demo"""
-    demo_files = {
-        'chatbot': 'demos/chatbot_demo.py',
-        'voice': 'demos/voice_demo.py',
-        'business': 'demos/business_demo.py'
+    demo_commands = {
+        "chatbot": "python demos/chatbot_demo.py",
+        "voice": "python demos/voice_assistant_inference_api.py",
+        "voice-basic": "python demos/voice_demo.py",
+        "voice-advanced": "python demos/voice_assistant_advanced.py",
+        "business": "python demos/business_demo.py",
+        "all": "python demos/chatbot_demo.py & python demos/voice_assistant_inference_api.py & python demos/business_demo.py"
     }
     
-    if demo_type not in demo_files:
+    if demo_type not in demo_commands:
         print(f"❌ Unknown demo type: {demo_type}")
-        print(f"Available demos: {', '.join(demo_files.keys())}")
-        return
+        print("Available demos:", ", ".join(demo_commands.keys()))
+        return False
     
-    demo_file = demo_files[demo_type]
-    if not os.path.exists(demo_file):
-        print(f"❌ Demo file not found: {demo_file}")
-        return
+    command = demo_commands[demo_type]
     
     print(f"🚀 Launching {demo_type} demo...")
+    print(f"Command: {command}")
+    
+    if demo_type == "voice":
+        print("🎤 Voice Assistant Features:")
+        print("   • Whisper → LLaMA-3 → TTS Pipeline")
+        print("   • Inference API Integration")
+        print("   • Context-aware responses")
+        print("   • Performance metrics")
+        print("   • Multi-language support (English/Pashto)")
+        print("🌐 Interface: http://localhost:7862")
+    elif demo_type == "voice-basic":
+        print("🎤 Basic Voice Assistant")
+        print("🌐 Interface: http://localhost:7861")
+    elif demo_type == "voice-advanced":
+        print("🎤 Advanced Voice Assistant with Analytics")
+        print("🌐 Interface: http://localhost:7862")
+    
     try:
         subprocess.run([sys.executable, demo_file], check=True)
     except subprocess.CalledProcessError as e:

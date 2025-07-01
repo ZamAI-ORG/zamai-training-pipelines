@@ -89,11 +89,86 @@ def text_to_speech(text, language="English"):
 def create_voice_demo():
     with gr.Blocks(
         title="ZamAI Voice Assistant",
-        theme=gr.themes.Soft(),
+        theme=gr.themes.Default(),
         css="""
-        .header { text-align: center; margin-bottom: 30px; }
-        .model-info { background: #e8f4fd; padding: 15px; border-radius: 10px; margin: 10px 0; }
-        .audio-section { background: #f0f8f0; padding: 20px; border-radius: 10px; margin: 10px 0; }
+        /* Main container */
+        .gradio-container { background: #f8fafc !important; }
+        
+        /* Header */
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white !important;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        /* Model info panel */
+        .model-info { 
+            background: #ffffff !important; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #374151 !important;
+        }
+        
+        /* Audio section */
+        .audio-section { 
+            background: #f0fdf4 !important; 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            border: 1px solid #22c55e;
+            color: #166534 !important;
+        }
+        
+        /* Buttons */
+        .gr-button {
+            background: linear-gradient(45deg, #059669, #10b981) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .gr-button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4) !important;
+        }
+        
+        /* Input fields */
+        .gr-textbox, .gr-dropdown, .gr-radio {
+            background: white !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            color: #374151 !important;
+        }
+        
+        /* Tabs */
+        .gr-tab {
+            background: white !important;
+            color: #374151 !important;
+            border-radius: 8px !important;
+            border: 1px solid #e5e7eb !important;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: #ffffff !important;
+            border-radius: 12px;
+            border-top: 4px solid #4f46e5;
+            color: #374151 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
         """
     ) as demo:
         

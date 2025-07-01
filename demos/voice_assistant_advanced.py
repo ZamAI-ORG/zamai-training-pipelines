@@ -153,12 +153,104 @@ SAMPLE_PROMPTS = {
 def create_advanced_voice_demo():
     with gr.Blocks(
         title="ZamAI Advanced Voice Assistant",
-        theme=gr.themes.Soft(),
+        theme=gr.themes.Default(),
         css="""
-        .header { text-align: center; margin-bottom: 30px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; }
-        .pipeline-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 5px solid #007bff; }
-        .metrics-display { background: #e8f4fd; padding: 15px; border-radius: 10px; font-family: monospace; }
-        .test-section { background: #fff3cd; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        /* Main container styling */
+        .gradio-container { background: #f5f7fa !important; }
+        
+        /* Header styling */
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white !important; 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Info panels */
+        .pipeline-info { 
+            background: #ffffff !important; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            border-left: 5px solid #007bff; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #333 !important;
+        }
+        
+        /* Metrics display */
+        .metrics-display { 
+            background: #e3f2fd !important; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-family: 'Courier New', monospace; 
+            border: 1px solid #2196f3;
+            color: #0d47a1 !important;
+        }
+        
+        /* Test section */
+        .test-section { 
+            background: #fff8e1 !important; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ffc107;
+            color: #e65100 !important;
+        }
+        
+        /* Audio section */
+        .audio-section {
+            background: #f0f8f0 !important;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px solid #4caf50;
+            color: #2e7d32 !important;
+        }
+        
+        /* Button styling */
+        .gr-button {
+            background: linear-gradient(45deg, #2196f3, #21cbf3) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .gr-button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+        }
+        
+        /* Input styling */
+        .gr-textbox, .gr-dropdown, .gr-radio {
+            background: white !important;
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            color: #333 !important;
+        }
+        
+        /* Tab styling */
+        .gr-tab {
+            background: white !important;
+            color: #333 !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Footer styling */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #ffffff !important;
+            border-radius: 12px;
+            border-top: 3px solid #667eea;
+            color: #333 !important;
+        }
         """
     ) as demo:
         

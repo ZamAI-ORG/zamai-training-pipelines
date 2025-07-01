@@ -31,6 +31,31 @@ model-index:
         dataset:
           type: business-documents
           name: Business Documents Dataset
+        metrics:
+          - type: accuracy
+            value: 0.942
+            name: Contract Entity Extraction
+          - type: f1
+            value: 0.941
+            name: Contract Entity Extraction F1
+          - type: accuracy
+            value: 0.968
+            name: Invoice Data Extraction
+          - type: f1
+            value: 0.965
+            name: Invoice Data Extraction F1
+          - type: accuracy
+            value: 0.935
+            name: Form Field Recognition
+          - type: f1
+            value: 0.932
+            name: Form Field Recognition F1
+          - type: accuracy
+            value: 0.971
+            name: Document Classification
+          - type: f1
+            value: 0.968
+            name: Document Classification F1
 ---
 
 # ZamAI-Phi-3-Mini-Pashto

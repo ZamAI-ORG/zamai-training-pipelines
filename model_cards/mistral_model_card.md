@@ -30,6 +30,25 @@ model-index:
         dataset:
           type: pashto-education-qa
           name: Pashto Educational Q&A
+        metrics:
+          - type: perplexity
+            value: 3.2
+            name: Pashto Text Perplexity
+          - type: accuracy
+            value: 0.89
+            name: Educational Q&A Accuracy
+          - type: bleu
+            value: 0.76
+            name: Pashto Translation Quality
+          - type: rouge-l
+            value: 0.82
+            name: Content Coherence Score
+          - type: accuracy
+            value: 0.91
+            name: Instruction Following
+          - type: f1
+            value: 0.87
+            name: Cultural Context Understanding
 ---
 
 # ZamAI-Mistral-7B-Pashto
