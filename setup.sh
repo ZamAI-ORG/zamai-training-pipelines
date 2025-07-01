@@ -41,8 +41,15 @@ fi
 print_status "Python 3 found"
 
 # Check Python version
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-print_info "Python version: $PYTHON_VERSION"
+PYTHON_VERSION_MAJOR=$(python3 -c "import sys; print(sys.version_info.major)")
+PYTHON_VERSION_MINOR=$(python3 -c "import sys; print(sys.version_info.minor)")
+print_info "Python version: $PYTHON_VERSION_MAJOR.$PYTHON_VERSION_MINOR"
+
+if [ "$PYTHON_VERSION_MAJOR" -ne 3 ] || [ "$PYTHON_VERSION_MINOR" -lt 9 ] || [ "$PYTHON_VERSION_MINOR" -ge 12 ]; then
+    print_error "This project requires Python version 3.9, 3.10, or 3.11 for 'tts' package compatibility."
+    print_error "Your version is $PYTHON_VERSION_MAJOR.$PYTHON_VERSION_MINOR. Please switch to a compatible Python version."
+    exit 1
+fi
 
 # Create virtual environment if it doesn't exist
 if [ ! -d "venv" ]; then
