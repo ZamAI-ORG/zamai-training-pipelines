@@ -8,8 +8,6 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from huggingface_hub import InferenceClient
-import librosa
-import soundfile as sf
 import tempfile
 from typing import Optional
 from dotenv import load_dotenv
@@ -33,12 +31,12 @@ app.add_middleware(
 )
 
 # Initialize Hugging Face Inference Client
-hf_client = InferenceClient(token=os.getenv("HF_TOKEN"))
+hf_client = InferenceClient(token=os.getenv("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"))
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
     message: str
-    language: str = "en"  # en or ps (Pashto)
+    language: str = "ps"  # en or ps (Pashto)
 
 class ChatResponse(BaseModel):
     response: str
@@ -121,10 +119,11 @@ async def process_voice(audio_file: UploadFile = File(...)):
             tmp_file_path = tmp_file.name
         
         # Step 1: Speech-to-Text using your Whisper model
-        transcription = hf_client.automatic_speech_recognition(
+        transcription_output = hf_client.automatic_speech_recognition(
             tmp_file_path,
             model=os.getenv("WHISPER_MODEL", "tasal9/ZamAI-Whisper-v3-Pashto")
         )
+        transcription = transcription_output["text"] if isinstance(transcription_output, dict) else getattr(transcription_output, "text", str(transcription_output))
         
         # Step 2: Generate response using your LLaMA-3 model
         llama3_model = os.getenv("LLAMA3_MODEL", "tasal9/ZamAI-LIama3-Pashto")
