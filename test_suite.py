@@ -44,7 +44,7 @@ class ZamAITester:
     def __init__(self):
         self.hf_token = os.getenv('HF_TOKEN')
         self.client = None
-        if self.hf_token and self.hf_token != 'your_hugging_face_token_here':
+        if self.hf_token and self.hf_token != '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':
             self.client = InferenceClient(token=self.hf_token)
         
         self.models = {
@@ -85,18 +85,18 @@ class ZamAITester:
             return False
         
         # Check HF token
-        if self.hf_token and self.hf_token != 'your_hugging_face_token_here':
+        if self.hf_token and self.hf_token != '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':
             print_success("Hugging Face token configured")
         else:
             print_warning("Hugging Face token not configured - some tests will be skipped")
         
         # Check requirements
         try:
-            import torch
-            import transformers
-            import gradio
-            import fastapi
-            import huggingface_hub
+            __import__('torch')
+            __import__('transformers')
+            __import__('gradio')
+            __import__('fastapi')
+            __import__('huggingface_hub')
             print_success("Core dependencies installed")
         except ImportError as e:
             print_failure(f"Missing dependency: {e}")

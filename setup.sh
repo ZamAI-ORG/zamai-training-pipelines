@@ -32,30 +32,55 @@ print_info() {
     echo -e "${BLUE}ℹ️  $1${NC}"
 }
 
-# Check if Python is installed
-if ! command -v python3 &> /dev/null; then
-    print_error "Python 3 is not installed. Please install Python 3.9 or higher."
+# Determine a working Python interpreter (try python3 then python)
+PY_CMD=""
+for cmd in python3 python; do
+    if command -v "$cmd" &> /dev/null; then
+        # verify interpreter works, not a broken shim
+        if "$cmd" -c "import sys" &> /dev/null; then
+            PY_CMD=$cmd
+            break
+        fi
+    fi
+done
+if [ -z "$PY_CMD" ]; then
+    print_error "Python is not installed or not functional. Please install Python 3.9 or higher."
     exit 1
 fi
 
-print_status "Python 3 found"
+print_status "Found interpreter: $PY_CMD"
 
 # Check Python version
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+# Check Python version
+PYTHON_VERSION=$($PY_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 print_info "Python version: $PYTHON_VERSION"
+
+# Enforce supported Python versions (>=3.9, <3.12)
+IFS='.' read -r PY_MAJOR PY_MINOR <<< "$PYTHON_VERSION"
+if [ "$PY_MAJOR" -ne 3 ] || [ "$PY_MINOR" -lt 9 ] || [ "$PY_MINOR" -ge 12 ]; then
+    print_error "Unsupported Python version $PYTHON_VERSION. Please install Python 3.9, 3.10, or 3.11."
+    exit 1
+fi
 
 # Create virtual environment if it doesn't exist
 if [ ! -d "venv" ]; then
     print_info "Creating virtual environment..."
-    python3 -m venv venv
+    $PY_CMD -m venv venv
     print_status "Virtual environment created"
 else
     print_info "Virtual environment already exists"
 fi
 
-# Activate virtual environment
+# Activate virtual environment (POSIX or Windows)
 print_info "Activating virtual environment..."
-source venv/bin/activate
+if [ -f "venv/bin/activate" ]; then
+    source venv/bin/activate
+elif [ -f "venv/Scripts/activate" ]; then
+    source venv/Scripts/activate
+else
+    print_error "Cannot find the virtualenv activate script"
+    exit 1
+fi
 
 # Upgrade pip
 print_info "Upgrading pip..."
@@ -101,10 +126,10 @@ if [ -f ".env" ]; then
     fi
 fi
 
-# Test model access (if token is available)
+## Test model access (if token is available)
 if [ -n "$HF_TOKEN" ] && [ "$HF_TOKEN" != "your_hugging_face_token_here" ]; then
     print_info "Testing model access..."
-    python3 -c "
+    $PY_CMD -c "
 from huggingface_hub import InferenceClient
 import os
 from dotenv import load_dotenv
@@ -126,7 +151,7 @@ for model in models:
         print(f'✅ {model} - Accessible')
     except Exception as e:
         print(f'⚠️  {model} - {str(e)[:50]}...')
-"
+"    
     print_status "Model access test completed"
 fi
 
