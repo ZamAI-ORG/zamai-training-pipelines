@@ -105,7 +105,8 @@ def launch_demo(demo_type):
         print("🌐 Interface: http://localhost:7862")
     
     try:
-        subprocess.run([sys.executable, '/home/kaliai/Documents/ZamAI-Pro-Models-Strategy2/demos/chatbot_demo.py'], check=True)
+        demo_script_path = Path(__file__).resolve().parent / 'demos' / 'chatbot_demo.py'
+        subprocess.run([sys.executable, str(demo_script_path)], check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ Error launching demo: {e}")
     except KeyboardInterrupt:
