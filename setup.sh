@@ -41,8 +41,9 @@ fi
 print_status "Python 3 found"
 
 # Check Python version
-PYTHON_VERSION_MAJOR=$(python3 -c "import sys; print(sys.version_info.major)")
-PYTHON_VERSION_MINOR=$(python3 -c "import sys; print(sys.version_info.minor)")
+PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+PYTHON_VERSION_MAJOR=${PYTHON_VERSION%%.*}
+PYTHON_VERSION_MINOR=${PYTHON_VERSION##*.}
 print_info "Python version: $PYTHON_VERSION_MAJOR.$PYTHON_VERSION_MINOR"
 
 if [ "$PYTHON_VERSION_MAJOR" -ne 3 ] || [ "$PYTHON_VERSION_MINOR" -lt 9 ] || [ "$PYTHON_VERSION_MINOR" -ge 12 ]; then
