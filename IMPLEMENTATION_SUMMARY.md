@@ -204,7 +204,7 @@ LEARNING_RATE=2e-5
 
 ### Existing Voice Infrastructure
 ✅ **Whisper Model**: `tasal9/ZamAI-Whisper-v3-Pashto` (Updated 1 hour ago)
-✅ **LLaMA-3 Model**: `tasal9/ZamAI-LIama3-Pashto` (Updated 9 days ago)
+✅ **LLaMA-3 Model**: `tasal9/ZamAI-LLaMA-3-Pashto` (Updated 9 days ago)
 ✅ **Voice Demos**: 4 different implementations
 ✅ **Voice Assistant Space**: Ready for deployment
 
