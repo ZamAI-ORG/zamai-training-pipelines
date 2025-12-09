@@ -68,11 +68,6 @@ def preprocess_translation_dataset(dataset, tokenizer, max_length=512, source_la
             )
         
         model_inputs["labels"] = labels["input_ids"]
-        # Replace padding token id's of the labels by -100 so they are ignored by loss
-        model_inputs["labels"] = [
-            [(label if label != tokenizer.pad_token_id else -100) for label in labels_example]
-            for labels_example in model_inputs["labels"]
-        ]
         
         return model_inputs
     
