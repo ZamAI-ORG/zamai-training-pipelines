@@ -6,7 +6,7 @@ Pro Account Features: GPU access, private datasets, enhanced compute
 
 import gradio as gr
 import os
-from huggingface_hub import HfApi, login, list_datasets
+from huggingface_hub import HfApi, login
 from datasets import load_dataset
 import subprocess
 import sys
