@@ -22,7 +22,14 @@ python main.py demo chatbot    # Educational chatbot
 python main.py demo voice      # Voice assistant  
 python main.py demo business   # Document processor
 
-# 5. Start API server
+# 5. Fine-tune models (NEW!)
+python scripts/fine_tune_phi3.py    # Fine-tune Phi-3
+python scripts/fine_tune_mt5.py     # Fine-tune MT5
+
+# 6. Deploy HF Spaces
+./deploy_finetuning_spaces.sh       # Deploy fine-tuning Spaces
+
+# 7. Start API server
 python main.py api
 ```
 
@@ -38,6 +45,23 @@ This project is built around your **6 existing models** on Hugging Face:
 | `tasal9/Multilingual-ZamAI-Embeddings` | Feature Extraction | Text embeddings | ✅ Updated 4 days ago |
 | `tasal9/ZamAI-LIama3-Pashto` | Text Generation (Private) | Advanced Pashto LLM | ✅ Updated 9 days ago |
 | `tasal9/pashto-base-bloom` | Text Generation (0.6B) | Lightweight Pashto model | ✅ Updated 14 days ago |
+
+## 🆕 New Fine-tuning Capabilities
+
+### MT5 Multilingual Model
+- **Model**: `tasal9/ZamAI-MT5-Pashto` (to be fine-tuned)
+- **Type**: Sequence-to-Sequence (Translation & Generation)
+- **Capabilities**: 
+  - English ↔ Pashto translation
+  - Multilingual text generation
+  - 100+ language support
+- **Fine-tuning**: Via HF Spaces or CLI script
+
+### Fine-tuning Spaces
+Interactive Gradio apps for fine-tuning on your Hub datasets:
+- **Phi-3 Fine-tuning Space**: `hf_spaces/phi3-finetuning/`
+- **MT5 Fine-tuning Space**: `hf_spaces/mt5-finetuning/`
+- **Deploy**: `./deploy_finetuning_spaces.sh`
 
 ## 📁 Project Structure
 
@@ -59,11 +83,22 @@ ZamAI-Pro-Models-Strategy2/
 │
 ├── 🔥 scripts/               # Training and fine-tuning
 │   ├── fine_tune_mistral.py # Mistral-7B fine-tuning
-│   └── fine_tune_phi3.py    # Phi-3-mini fine-tuning
+│   ├── fine_tune_phi3.py    # Phi-3-mini fine-tuning
+│   └── fine_tune_mt5.py     # MT5 multilingual fine-tuning (NEW)
 │
 ├── 📄 model_cards/           # Model documentation
 │   ├── mistral_model_card.md
 │   └── phi3_model_card.md
+│
+├── 🌐 hf_spaces/             # Hugging Face Spaces (NEW)
+│   ├── phi3-finetuning/     # Interactive Phi-3 fine-tuning Space
+│   ├── mt5-finetuning/      # Interactive MT5 fine-tuning Space
+│   ├── voice-assistant/     # Voice assistant demo Space
+│   └── business-tools/      # Business tools demo Space
+│
+├── 📚 Documentation          # Comprehensive guides (NEW)
+│   ├── FINETUNING_GUIDE.md  # Complete fine-tuning guide
+│   └── VOICE_MODEL_GUIDE.md # Voice model documentation
 │
 └── ⚙️ .github/workflows/      # CI/CD automation
     └── deploy-models.yml     # Auto-deploy on push
