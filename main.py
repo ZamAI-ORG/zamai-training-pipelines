@@ -70,24 +70,34 @@ def list_available_models():
 
 def launch_demo(demo_type):
     """Launch a specific demo"""
-    demo_commands = {
-        "chatbot": "python demos/chatbot_demo.py",
-        "voice": "python demos/voice_assistant_inference_api.py",
-        "voice-basic": "python demos/voice_demo.py",
-        "voice-advanced": "python demos/voice_assistant_advanced.py",
-        "business": "python demos/business_demo.py",
-        "all": "python demos/chatbot_demo.py & python demos/voice_assistant_inference_api.py & python demos/business_demo.py"
+    demo_files = {
+        "chatbot": "demos/chatbot_demo.py",
+        "voice": "demos/voice_assistant_inference_api.py",
+        "voice-basic": "demos/voice_demo.py",
+        "voice-advanced": "demos/voice_assistant_advanced.py",
+        "business": "demos/business_demo.py",
     }
     
-    if demo_type not in demo_commands:
+    if demo_type not in demo_files:
         print(f"❌ Unknown demo type: {demo_type}")
-        print("Available demos:", ", ".join(demo_commands.keys()))
+        print("Available demos:", ", ".join(demo_files.keys()))
         return False
     
-    command = demo_commands[demo_type]
+    demo_file = demo_files[demo_type]
+    
+    if not os.path.exists(demo_file):
+        print(f"❌ Demo file not found: {demo_file}")
+        return False
     
     print(f"🚀 Launching {demo_type} demo...")
-    print(f"Command: {command}")
+    print(f"File: {demo_file}")
+    
+    # Port assignments based on actual demo files:
+    # chatbot_demo.py: 7860
+    # voice_demo.py: 7861
+    # voice_assistant_advanced.py: 7861
+    # voice_assistant_inference_api.py: 7862
+    # business_demo.py: 7862
     
     if demo_type == "voice":
         print("🎤 Voice Assistant Features:")
@@ -102,7 +112,19 @@ def launch_demo(demo_type):
         print("🌐 Interface: http://localhost:7861")
     elif demo_type == "voice-advanced":
         print("🎤 Advanced Voice Assistant with Analytics")
+        print("🌐 Interface: http://localhost:7861")
+    elif demo_type == "chatbot":
+        print("🎓 Educational Chatbot Features:")
+        print("   • Bilingual tutoring (English/Pashto)")
+        print("   • Adaptive learning")
+        print("🌐 Interface: http://localhost:7860")
+    elif demo_type == "business":
+        print("📊 Business Document Processor Features:")
+        print("   • Contract analysis")
+        print("   • Invoice processing")
+        print("   • Form extraction")
         print("🌐 Interface: http://localhost:7862")
+        print("⚠️  Note: Business demo and Voice demo share port 7862, run only one at a time")
     
     try:
         subprocess.run([sys.executable, demo_file], check=True)
